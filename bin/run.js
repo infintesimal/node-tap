@@ -379,7 +379,7 @@ const runTests = options => {
   const tap = require('../lib/tap.js')
   if (options.comments) {
     const onComment = c => {
-      if (!c.match(/^# (time=[0-9\.]+m?s|Subtest(: .+))\n$/))
+      if (!c.match(/^# (time=[0-9\.]+m?s|Subtest(: .+)?)\n$/))
         console.error(c.substr(2).trim())
     }
     const onChild = p => {
@@ -399,7 +399,12 @@ const runTests = options => {
 
   // if not -Rtap, then output what the user wants.
   // otherwise just dump to stdout
-  tap.pipe(options.reporter === 'tap' ? process.stdout: makeReporter(options))
+  if (options.reporter === 'new') {
+    // use the new reporter
+    require('../lib/reporter')(tap)
+  } else
+    tap.pipe(options.reporter === 'tap' ? process.stdout: makeReporter(options))
+
 
   // need to replay the first version line, because the previous
   // line will have flushed it out to stdout or the reporter already.
