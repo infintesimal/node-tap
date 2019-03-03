@@ -9,14 +9,27 @@ var t = require('../')
 var fs = require('fs')
 var mkdirp = require('mkdirp')
 var rimraf = require('rimraf')
+var path = require('path')
+var findUp = require('find-up')
+ 
+// NOTE: NYC package will ignore value of `cwd` arg
+// if a package.json exists and simply write its output
+// to root node of package/coverage -- this code adjusts
+// for this behavior
 
-var dir = __dirname + '/coverage-html-no-browser'
+// Based on this new NYC behavior, setting up
+// a local path is unnecesary, so I drop the
+// 'setup a working dir' test found in 10.7.3
+
+var pkgPath = findUp.sync('package.json', { cwd: __dirname })
+var dir = '';
+if (pkgPath) {
+  dir = path.dirname(pkgPath);
+} else {
+  dir = `cwd`;
+}
+
 var htmlfile = dir + '/coverage/lcov-report/bin/run.js.html'
-
-t.test('setup a working dir', function (t) {
-  mkdirp.sync(dir)
-  t.end()
-})
 
 t.test('generate some coverage data', function (t) {
   spawn(node, [run, ok, '--coverage', '--no-coverage-report'], {
@@ -44,6 +57,6 @@ t.test('generate html, but do not open in a browser', function (t) {
 })
 
 t.test('cleanup', function (t) {
-  rimraf.sync(dir)
+  rimraf.sync(dir + "/coverage")
   t.end()
 })
